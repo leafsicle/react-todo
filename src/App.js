@@ -1,25 +1,60 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react'
+import Header from './components/Header'
+import Tasks from './components/Tasks'
+// import AddTask from './components/AddTask';
 
-function App() {
+const App = () => {
+  const [tasks, setTasks] = useState([
+    {
+      id: 1,
+      text: 'Dr. Appointment',
+      day: 'Feb 5th at 1430',
+      reminder: true,
+    },
+    {
+      id: 2,
+      text: 'Meeting at School',
+      day: 'Feb 6th at 1330',
+      reminder: true,
+    },
+    {
+      id: 3,
+      text: 'Food Shopping',
+      day: 'Feb 5th at 1430',
+      reminder: false,
+    },
+  ])
+
+  const deleteTask = id => {
+    setTasks(tasks.filter(task => task.id !== id))
+    //This is where I would set 'active' to false if I had a backend implemented
+    //task.active ===  false
+  }
+
+  const toggleTaskReminder = id => {
+    setTasks(
+      tasks.map(task =>
+        task.id === id ? { ...task, reminder: !task.reminder } : task
+      )
+    )
+    console.log(id, 'was toggled')
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='container'>
+      <Header />
+      {/* <AddnpTask /> */}
+      {tasks.length > 0 ? (
+        <Tasks
+          tasks={tasks}
+          onDelete={deleteTask}
+          onToggle={toggleTaskReminder}
+        />
+      ) : (
+        "No tasks have been added. Try hitting the 'add' button"
+      )}
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
