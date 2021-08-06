@@ -25,6 +25,14 @@ const App = () => {
     },
   ])
 
+  const addTask = task => {
+    console.log(task)
+
+    const id = Math.floor(Math.random() * 10000 + 1)
+    const newTask = { id, ...task }
+    setTasks([...tasks, newTask])
+  }
+
   const deleteTask = id => {
     setTasks(tasks.filter(task => task.id !== id))
     //This is where I would set 'active' to false if I had a backend implemented
@@ -37,13 +45,12 @@ const App = () => {
         task.id === id ? { ...task, reminder: !task.reminder } : task
       )
     )
-    console.log(id, 'was toggled')
   }
 
   return (
     <div className='container'>
       <Header />
-      <AddTask />
+      <AddTask onAdd={addTask} />
       {tasks.length > 0 ? (
         <Tasks
           tasks={tasks}
