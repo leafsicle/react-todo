@@ -1,48 +1,60 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Tasks from './components/Tasks'
 import AddTask from './components/AddTask'
 
 const App = () => {
+  const [tasks, setTasks] = useState([])
   const [showAddTask, setShowAddTask] = useState(false)
 
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      text: 'Dr. Appointment',
-      day: 'Feb 5th at 1430',
-      reminder: true,
-    },
-    {
-      id: 2,
-      text: 'Meeting at School',
-      day: 'Feb 6th at 1330',
-      reminder: true,
-    },
-    {
-      id: 3,
-      text: 'Food Shopping',
-      day: 'Feb 5th at 1430',
-      reminder: false,
-    },
-  ])
+  useEffect(() => {
+    const getTasks = async () => {
+      let tasksFromServer = await fetchTasks()
+      setTasks(tasksFromServer)
+    }
 
-  const addTask = task => {
-    console.log(task)
+    getTasks()
+  }, [])
 
-    const id = Math.floor(Math.random() * 10000 + 1)
-    const newTask = { id, ...task }
-    setTasks([...tasks, newTask])
+  const fetchTasks = async () => {
+    const res = await fetch('http://localhost:5000/tasks')
+    const data = await res.json()
+    return data
   }
 
-  const deleteTask = id => {
+  const fetchTask = async id => {
+    const res = await fetch(`http://localhost:5000/tasks/${id}`)
+    const data = await res.json()
+    return data
+  }
+
+  const addTask = async task => {
+    let res = await fetch('http://localhost:5000/tasks/', {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: JSON.stringify(task),
+    })
+
+    let data = await res.json()
+    setTasks([...tasks, data])
+    // const id = Math.floor(Math.random() * 10000 + 1)
+    // const newTask = { id, ...task }
+    // setTasks([...tasks, newTask])
+  }
+
+  const deleteTask = async id => {
+    await fetch(`http://localhost:5000/tasks/${id}`, { method: 'DELETE' })
+
+    // was formerly a static 'remove'
     setTasks(tasks.filter(task => task.id !== id))
-    //This is where I would set 'active' to false if I had a backend implemented
-    //task.active ===  false
   }
 
-  const toggleTaskReminder = id => {
-    setTasks(
+  const toggleTaskReminder = async id => {
+    let taskToToggle = await fetchTask(id)
+    let updatedTask = { ...taskToToggle, reminder: !taskToToggle.reminder }
+    let res = setTasks(
       tasks.map(task =>
         task.id === id ? { ...task, reminder: !task.reminder } : task
       )
@@ -51,7 +63,10 @@ const App = () => {
 
   return (
     <div className='container'>
-      <Header onAdd={() => setShowAddTask(!showAddTask)} />
+      <Header
+        onAdd={() => setShowAddTask(!showAddTask)}
+        showAdd={showAddTask}
+      />
       {showAddTask && <AddTask onAdd={addTask} />}
       {tasks.length > 0 ? (
         <Tasks
